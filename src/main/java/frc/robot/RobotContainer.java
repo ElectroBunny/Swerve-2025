@@ -13,7 +13,7 @@ import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.swervedrive.drivebase.AbsoluteDriveAdv;
@@ -29,7 +29,8 @@ public class RobotContainer
 {
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
-  final         CommandXboxController driverXbox = new CommandXboxController(0);
+  final         CommandPS5Controller driverPS5 = new CommandPS5Controller(0);
+
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
@@ -41,16 +42,16 @@ public class RobotContainer
   // buttons are quick rotation positions to different ways to face
   // WARNING: default buttons are on the same buttons as the ones defined in configureBindings
   AbsoluteDriveAdv closedAbsoluteDriveAdv = new AbsoluteDriveAdv(drivebase,
-                                                                 () -> -MathUtil.applyDeadband(driverXbox.getLeftY(),
+                                                                 () -> -MathUtil.applyDeadband(driverPS5.getLeftY(),
                                                                                                OperatorConstants.LEFT_Y_DEADBAND),
-                                                                 () -> -MathUtil.applyDeadband(driverXbox.getLeftX(),
+                                                                 () -> -MathUtil.applyDeadband(driverPS5.getLeftX(),
                                                                                                OperatorConstants.LEFT_X_DEADBAND),
-                                                                 () -> -MathUtil.applyDeadband(driverXbox.getRightX(),
+                                                                 () -> -MathUtil.applyDeadband(driverPS5.getRightX(),
                                                                                                OperatorConstants.RIGHT_X_DEADBAND),
-                                                                 driverXbox.getHID()::getYButtonPressed,
-                                                                 driverXbox.getHID()::getAButtonPressed,
-                                                                 driverXbox.getHID()::getXButtonPressed,
-                                                                 driverXbox.getHID()::getBButtonPressed);
+                                                                 driverPS5.getHID()::getTriangleButtonPressed,
+                                                                 driverPS5.getHID()::getCrossButtonPressed,
+                                                                 driverPS5.getHID()::getSquareButtonPressed,
+                                                                 driverPS5.getHID()::getCircleButtonPressed);
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -58,10 +59,10 @@ public class RobotContainer
   // left stick controls translation
   // right stick controls the desired angle NOT angular rotation
   Command driveFieldOrientedDirectAngle = drivebase.driveCommand(
-      () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-      () -> driverXbox.getRightX(),
-      () -> driverXbox.getRightY());
+      () -> MathUtil.applyDeadband(driverPS5.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverPS5.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverPS5.getRightX(),
+      () -> driverPS5.getRightY());
 
   // Applies deadbands and inverts controls because joysticks
   // are back-right positive while robot
@@ -69,19 +70,19 @@ public class RobotContainer
   // left stick controls translation
   // right stick controls the angular velocity of the robot
   Command driveFieldOrientedAnglularVelocity = drivebase.driveCommand(
-      () -> MathUtil.applyDeadband(driverXbox.getLeftY() * -1, OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverXbox.getLeftX() * -1, OperatorConstants.LEFT_X_DEADBAND),
-      () -> driverXbox.getRightX() * -1);
+      () -> MathUtil.applyDeadband(driverPS5.getLeftY() * -1, OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverPS5.getLeftX() * -1, OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverPS5.getRightX() * -1);
 
   Command driveFieldOrientedDirectAngleSim = drivebase.simDriveCommand(
-      () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-      () -> driverXbox.getRawAxis(2));
+      () -> MathUtil.applyDeadband(driverPS5.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverPS5.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverPS5.getRawAxis(2));
 
   Command driveSetpointGenSim = drivebase.simDriveCommand(
-      () -> MathUtil.applyDeadband(driverXbox.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
-      () -> MathUtil.applyDeadband(driverXbox.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
-      () -> driverXbox.getRawAxis(2));
+      () -> MathUtil.applyDeadband(driverPS5.getLeftY(), OperatorConstants.LEFT_Y_DEADBAND),
+      () -> MathUtil.applyDeadband(driverPS5.getLeftX(), OperatorConstants.LEFT_X_DEADBAND),
+      () -> driverPS5.getRawAxis(2));
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -103,34 +104,34 @@ public class RobotContainer
   {
     if (Robot.isSimulation())
     {
-      driverXbox.start().onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
+      driverPS5.PS().onTrue(Commands.runOnce(() -> drivebase.resetOdometry(new Pose2d(3, 3, new Rotation2d()))));
     }
     if (DriverStation.isTest())
     {
-      driverXbox.b().whileTrue(drivebase.sysIdDriveMotorCommand());
-      driverXbox.x().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.y().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
-      driverXbox.start().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverXbox.back().whileTrue(drivebase.centerModulesCommand());
-      driverXbox.leftBumper().onTrue(Commands.none());
-      driverXbox.rightBumper().onTrue(Commands.none());
+      driverPS5.circle().whileTrue(drivebase.sysIdDriveMotorCommand());
+      driverPS5.square().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      driverPS5.triangle().whileTrue(drivebase.driveToDistanceCommand(1.0, 0.2));
+      driverPS5.PS().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+      driverPS5.options().whileTrue(drivebase.centerModulesCommand());
+      driverPS5.L1().onTrue(Commands.none());
+      driverPS5.R1().onTrue(Commands.none());
       drivebase.setDefaultCommand(
           !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
     } else
     {
-      driverXbox.a().onTrue((Commands.runOnce(drivebase::zeroGyro)));
-      driverXbox.x().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
-      driverXbox.b().whileTrue(
+      driverPS5.cross().onTrue((Commands.runOnce(drivebase::zeroGyro)));
+      driverPS5.square().onTrue(Commands.runOnce(drivebase::addFakeVisionReading));
+      driverPS5.circle().whileTrue(
           drivebase.driveToPose(
               new Pose2d(new Translation2d(4, 4), Rotation2d.fromDegrees(0)))
                               );
-      driverXbox.y().whileTrue(drivebase.aimAtSpeaker(2));
-      driverXbox.start().whileTrue(Commands.none());
-      driverXbox.back().whileTrue(Commands.none());
-      driverXbox.leftBumper().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
-      driverXbox.rightBumper().onTrue(Commands.none());
+      driverPS5.triangle().whileTrue(drivebase.aimAtSpeaker(2));
+      driverPS5.PS().whileTrue(Commands.none());
+      driverPS5.options().whileTrue(Commands.none());
+      driverPS5.L1().whileTrue(Commands.runOnce(drivebase::lock, drivebase).repeatedly());
+      driverPS5.R1().onTrue(Commands.none());
       drivebase.setDefaultCommand(
-          !RobotBase.isSimulation() ? driveFieldOrientedDirectAngle : driveFieldOrientedDirectAngleSim);
+          !RobotBase.isSimulation() ? driveFieldOrientedAnglularVelocity : driveFieldOrientedDirectAngleSim);
     }
   }
 
